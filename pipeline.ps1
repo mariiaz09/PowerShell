@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 #Using PowerShell pipeline
 =======
 Selecting, sorting, and displaying data
