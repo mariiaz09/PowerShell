@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+#Using PowerShell pipeline
+=======
 Selecting, sorting, and displaying data
 1. Display the current day of the year
 help *date*
@@ -32,3 +35,5 @@ Get-NetNeighbor | Sort-Object –Property State | Select-Object –Property IPAd
 
 
 
+
+>>>>>>> c4b628a5ede30c47e1dc97ce60ee9a01582db0b9
