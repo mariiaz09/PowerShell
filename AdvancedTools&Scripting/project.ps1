@@ -1,14 +1,7 @@
-PowerShell Scripting Suggestions 
-
-Create solutions automating Windows Server or Azure deployments, operations, and administration tasks or workloads using PowerShell scripting language.  
-
-Start by expanding on existing labs and assignments. 
-
-Select topics or subject areas you are passionate about.  
-
-Collaborate with fellow students on ideas, challenges, and solutions.  
-
-Consult with me for help or review 
+#Install AD DS on a server from DC
+Install-WindowsFeature -Name AD-Domain-Services -ComputerName LON-SVR1
+#Check if Installed
+Get-WindowsFeature -ComputerName LON-SVR1
 
 Create bulk Users 
 
