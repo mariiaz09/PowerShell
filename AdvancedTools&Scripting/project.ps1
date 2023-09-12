@@ -2,20 +2,44 @@
 Install-WindowsFeature -Name AD-Domain-Services -ComputerName LON-SVR1
 #Check if Installed
 Get-WindowsFeature -ComputerName LON-SVR1
+#Create bulk Users 
+Import-Csv -Path "C:\path\to\users.csv" | ForEach-Object {
+    New-ADUser -SamAccountName $_.SamAccountName `
+               -Name $_.Name `
+               -GivenName $_.GivenName `
+               -Surname $_.Surname `
+               -UserPrincipalName $_.UserPrincipalName `
+               -Path $_.Path `
+               -AccountPassword (ConvertTo-SecureString $_.AccountPassword -AsPlainText -Force) `
+               -Enabled $true  # You can set other attributes as needed
+}
 
-Create bulk Users 
+#Enumerate expired user accounts 
+Get-ADUser -Filter {AccountExpires -lt [datetime]::Now} -Properties AccountExpires | Select-Object Name, SamAccountName, AccountExpires
 
-Enumerate expired user accounts 
 
-Enumerate user accounts expired within last 24-hour period 
+#Enumerate user accounts expired within last 24-hour period 
+Get-ADUser -Filter {AccountExpires -ge [datetime]::Now.AddDays(-1) -and AccountExpires -lt [datetime]::Now} -Properties AccountExpires | Select-Object Name, SamAccountName, AccountExpires
 
-Locate and unlock specific user account 
+#Locate and unlock specific user account 
+Get-ADUser -Filter {SamAccountName -eq "Username"} | Unlock-ADAccount
 
-Retrieve all locked accounts 
+#Retrieve all locked accounts 
+Search-ADAccount -LockedOut | Select-Object Name, SamAccountName
 
-Disable user accounts that have that have not been used to logon with in 30 or more days 
+#Disable user accounts that have that have not been used to logon with in 30 or more days 
+$LastLogonThreshold = (Get-Date).AddDays(-30)
 
-Move disabled users into a specific OU 
+Get-ADUser -Filter {LastLogonTimestamp -lt $LastLogonThreshold -and Enabled -eq $true} -Properties LastLogonTimestamp |
+    Set-ADUser -Enabled $false
+
+#Move disabled users into a specific OU 
+$DisabledUsers = Get-ADUser -Filter {Enabled -eq $false}
+
+foreach ($User in $DisabledUsers) {
+    Move-ADObject -Identity $User -TargetPath "OU=YourTargetOU,DC=yourdomain,DC=com"
+}
+
 
 Remove Disabled Users from all Security Groups except Domain Users 
 
