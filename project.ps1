@@ -91,16 +91,47 @@ Retrieve disk size and amount of free space on a remote host
 
 Stop and start process on remote host 
 
-Stop and start services on remote host 
+#Stop and start services on remote host 
+Invoke-Command -ComputerName "RemoteComputer" -ScriptBlock {
+    Stop-Service -Name "ServiceName" -Force
+}
+Invoke-Command -ComputerName "RemoteComputer" -ScriptBlock {
+    Start-Service -Name "ServiceName"
+}
+
 
 #Retrieve a list of printers installed on a computer 
 Get-WmiObject -Query "SELECT * FROM Win32_Printer" | Select-Object Name, PortName, DriverName
 
 
-List Ip address for a remote host 
+#List Ip address for a remote host 
+Test-Connection -ComputerName "RemoteHostName" | Select-Object -ExpandProperty IPV4Address
 
-Retrieve network Adapter properties for remote computers 
+#Retrieve network Adapter properties for remote computers 
+$Computers = "RemoteComputer1", "RemoteComputer2"  # Replace with the names of the remote computers you want to query
 
-Release and renew DHCP leases on Adapters 
+foreach ($Computer in $Computers) {
+    Write-Host "Network Adapter Properties for $Computer:"
+    
+    $NetworkAdapters = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -ComputerName $Computer
+    foreach ($Adapter in $NetworkAdapters) {
+        Write-Host "Adapter Description: $($Adapter.Description)"
+        Write-Host "IP Address(es): $($Adapter.IPAddress -join ', ')"
+        Write-Host "Subnet Mask(s): $($Adapter.IPSubnet -join ', ')"
+        Write-Host "Default Gateway(s): $($Adapter.DefaultIPGateway -join ', ')"
+        Write-Host "DNS Server(s): $($Adapter.DNSServerSearchOrder -join ', ')"
+        Write-Host "MAC Address: $($Adapter.MACAddress)"
+        Write-Host ""
+    }
+}
 
-Create a network Share  
+#Release and renew DHCP leases on Adapters 
+# Release DHCP lease for a specific network adapter
+Invoke-Command -ScriptBlock { ipconfig /release } -AsJob -RunAsAdministrator -ComputerName localhost
+
+# Renew DHCP lease for the same network adapter
+Invoke-Command -ScriptBlock { ipconfig /renew } -AsJob -RunAsAdministrator -ComputerName localhost
+
+#Create a network Share 
+New-SmbShare -Name "MyShare" -Path "C:\SharedFolder" -FullAccess "Everyone" -Description "My Shared Folder"
+
