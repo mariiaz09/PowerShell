@@ -69,7 +69,7 @@ Get-ADGroup -Filter {GroupCategory -eq "Security"} | ForEach-Object {
 }
 
 
-##Add Users into Groups 
+#Add Users into Groups 
 Add-ADGroupMember -Identity "GroupName" -Members "User1", "User2", "User3"
 
 
@@ -93,7 +93,9 @@ Stop and start process on remote host
 
 Stop and start services on remote host 
 
-Retrieve a list of printers installed on a computer 
+#Retrieve a list of printers installed on a computer 
+Get-WmiObject -Query "SELECT * FROM Win32_Printer" | Select-Object Name, PortName, DriverName
+
 
 List Ip address for a remote host 
 
