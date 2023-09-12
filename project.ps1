@@ -41,13 +41,43 @@ foreach ($User in $DisabledUsers) {
 }
 
 
-Remove Disabled Users from all Security Groups except Domain Users 
+#Remove Disabled Users from all Security Groups except Domain Users 
+# Define the name of the excluded group (e.g., "Domain Users")
+$excludedGroupName = "Domain Users"
 
-Add Users into Groups 
+# Get all disabled users
+$disabledUsers = Get-ADUser -Filter {Enabled -eq $false}
 
-Create OUs 
+# Iterate through all security groups in the domain
+Get-ADGroup -Filter {GroupCategory -eq "Security"} | ForEach-Object {
+    $group = $_
+    
+    # Exclude the "Domain Users" group from modifications
+    if ($group.Name -ne $excludedGroupName) {
+        Write-Host "Processing $($group.Name)..."
+        
+        # Iterate through the members of the group
+        $groupMembers = Get-ADGroupMember -Identity $group
+        foreach ($member in $groupMembers) {
+            # Check if the member is a disabled user
+            if ($disabledUsers | Where-Object { $_.DistinguishedName -eq $member.DistinguishedName }) {
+                Write-Host "Removing $($member.Name) from $($group.Name)..."
+                Remove-ADGroupMember -Identity $group -Members $member -Confirm:$false
+            }
+        }
+    }
+}
 
-Create Groups 
+
+##Add Users into Groups 
+Add-ADGroupMember -Identity "GroupName" -Members "User1", "User2", "User3"
+
+
+#Create OUs 
+New-ADOrganizationalUnit -Name "NewOU" -Path "OU=ParentOU,DC=example,DC=com"
+
+#Create Groups 
+New-ADGroup -Name "MyGroup" -SamAccountName "MyGroup" -GroupCategory Security -GroupScope Global -DisplayName "My Group" -Path "OU=Groups,DC=example,DC=com"
 
 Create list of computers with a particular operating system installed 
 
